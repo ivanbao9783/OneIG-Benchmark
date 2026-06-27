@@ -8,7 +8,7 @@ from tqdm import tqdm
 from scripts.utils.utils import parse_args, split_mxn_grid, save2csv, on_rm_error
 
 from scripts.text.text_utils import preprocess_string, clean_and_remove_hallucinations, levenshtein_distance, calculate_char_match_ratio
-from scripts.utils.inference import Qwen2_5VLBatchInferencer
+from scripts.utils.inference import Qwen2_5VLBatchInferencer, Qwen3VLBatchInferencer
 
 import datetime
 current_time = datetime.datetime.now()
@@ -19,7 +19,8 @@ def main():
     cache_dir = f"tmp_{formatted_time}"
     os.makedirs(cache_dir, exist_ok=True)
     
-    influencer = Qwen2_5VLBatchInferencer("Qwen/Qwen2.5-VL-7B-Instruct")
+    # influencer = Qwen2_5VLBatchInferencer("Qwen/Qwen2.5-VL-7B-Instruct")
+    influencer = Qwen3VLBatchInferencer("Qwen/Qwen3-VL-8B-Instruct")
     
     if args.mode == "EN":
         text_csv_path = "scripts/text/text_content.csv"

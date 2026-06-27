@@ -9,13 +9,14 @@ from scripts.utils.utils import parse_args, split_mxn_grid, save2csv, on_rm_erro
 
 import json
 from copy import deepcopy
-from scripts.utils.inference import Qwen2_5VLBatchInferencer
+from scripts.utils.inference import Qwen2_5VLBatchInferencer, Qwen3VLBatchInferencer
 
 import datetime
 current_time = datetime.datetime.now()
 formatted_time = current_time.strftime("%Y-%m-%d_%H-%M-%S")
 
-inferencer = Qwen2_5VLBatchInferencer("Qwen/Qwen2.5-VL-7B-Instruct")
+# inferencer = Qwen2_5VLBatchInferencer("Qwen/Qwen2.5-VL-7B-Instruct")
+inferencer = Qwen3VLBatchInferencer("Qwen/Qwen3-VL-8B-Instruct")
 
 def alignment_score(img_path, questions, dependencies, img_grid, cache_dir):
     score = {}

@@ -92,7 +92,85 @@ class Qwen2_5VLBatchInferencer:
                 }
             ])
         return self.batch_inference(messages, max_new_tokens=max_new_tokens)
-    
+
+class Qwen3VLBatchInferencer:
+    def __init__(self, model_path: str = "Qwen/Qwen3-VL-8B-Instruct", 
+                    device: str = "cuda", 
+                    dtype=torch.bfloat16, 
+                    use_flash_attention: bool = True):
+        
+        attn_impl = "flash_attention_2" if use_flash_attention else "eager"
+        
+        from transformers import Qwen3VLForConditionalGeneration
+        
+        self.model = Qwen3VLForConditionalGeneration.from_pretrained(
+            model_path,
+            torch_dtype=dtype,
+            attn_implementation=attn_impl,
+            device_map="auto",
+        )
+        self.processor = AutoProcessor.from_pretrained(model_path)
+        self.device = torch.device(device)
+        self.TEXT_PROMPT = (
+            "Recognize the text in the image, only reply with the text content, "
+            "but avoid repeating previously mentioned content. "
+            "If no text is recognized, please reply with 'No text recognized'."
+        )
+
+    def batch_inference(self, messages, max_new_tokens=128):
+        texts = [
+            self.processor.apply_chat_template(msg, tokenize=False, add_generation_prompt=True)
+            for msg in messages
+        ]
+        image_inputs, video_inputs = process_vision_info(messages)
+
+        inputs = self.processor(
+            text=texts,
+            images=image_inputs,
+            videos=video_inputs,
+            padding=True,
+            return_tensors="pt",
+        ).to(self.device)
+
+        with torch.no_grad():
+            generated_ids = self.model.generate(**inputs, max_new_tokens=max_new_tokens)
+            generated_ids_trimmed = [
+                out_ids[len(in_ids):] for in_ids, out_ids in zip(inputs.input_ids, generated_ids)
+            ]
+            output_texts = self.processor.batch_decode(
+                generated_ids_trimmed,
+                skip_special_tokens=True,
+                clean_up_tokenization_spaces=False,
+            )
+        return output_texts
+
+    def infer_semantic(self, images_path: list, question: str):
+        messages = []
+        for image_path in images_path:
+            messages.append([
+                {
+                    "role": "user",
+                    "content": [
+                        {"type": "image", "image": image_path},
+                        {"type": "text", "text": f"{question}. Please answer 'Yes' or 'No' only."}
+                    ],
+                }
+            ])
+        return self.batch_inference(messages)
+
+    def infer_ocr(self, images_path: list, max_new_tokens: int = 128):
+        messages = []
+        for image_path in images_path:
+            messages.append([
+                {
+                    "role": "user",
+                    "content": [
+                        {"type": "image", "image": image_path},
+                        {"type": "text", "text": self.TEXT_PROMPT}
+                    ],
+                }
+            ])
+        return self.batch_inference(messages, max_new_tokens=max_new_tokens)
 
 class CSDStyleEmbedding:
     def __init__(self, model_path: str = "scripts/style/models/checkpoint.pth", device: str = "cuda"):
@@ -168,7 +246,7 @@ class LLM2CLIP:
             self.llm_model_name, trust_remote_code=True
         )
         self.llm_model = AutoModel.from_pretrained(
-            self.llm_model_name, torch_dtype=torch.bfloat16, config=self.config, trust_remote_code=True
+            self.llm_model_name, torch_dtype=torch.bfloat16, config=self.config, trust_remote_code=True, attn_implementation="flash_attention_2"
         )
         self.tokenizer = AutoTokenizer.from_pretrained(self.llm_model_name)
         
