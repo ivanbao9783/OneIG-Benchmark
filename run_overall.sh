@@ -10,8 +10,8 @@ MODE=EN
 IMAGE_DIR=""
 
 # model list
-MODEL_NAMES=("janus-pro")
-# model_names=("gpt-4o" "imagen4")
+MODEL_NAMES=("Qwen-Image")
+# MODEL_NAMES=("gpt-4o" "imagen4")
 
 # image grid
 IMAGE_GRIDS=("2,2")
@@ -19,7 +19,7 @@ IMAGE_GRIDS=("2,2")
 
 echo "Running all evaluation scripts"
 
-pip install transformers==4.50.0
+pip install transformers==4.57.0
 
 # Alignment Score
 
@@ -29,7 +29,7 @@ python -m scripts.alignment.alignment_score \
   --mode "$MODE" \
   --image_dirname "$IMAGE_DIR" \
   --model_names "${MODEL_NAMES[@]}" \
-  --image_grid "${IMAGE_GRID[@]}" \
+  --image_grid "${IMAGE_GRIDS[@]}" \
   --class_items "anime" "human" "object" \
 
 # In ZH mode, the class_items list can be extended to include "multilingualism".
@@ -42,7 +42,7 @@ python -m scripts.text.text_score \
   --mode "$MODE" \
   --image_dirname "$IMAGE_DIR/text" \
   --model_names "${MODEL_NAMES[@]}" \
-  --image_grid "${IMAGE_GRID[@]}" \
+  --image_grid "${IMAGE_GRIDS[@]}" \
 
 # Diversity Score
 
@@ -52,7 +52,7 @@ python -m scripts.diversity.diversity_score \
   --mode "$MODE" \
   --image_dirname "$IMAGE_DIR" \
   --model_names "${MODEL_NAMES[@]}" \
-  --image_grid "${IMAGE_GRID[@]}" \
+  --image_grid "${IMAGE_GRIDS[@]}" \
   --class_items "anime" "human" "object" "text" "reasoning" \
 
 # Style Score
@@ -63,7 +63,7 @@ python -m scripts.style.style_score \
   --mode "$MODE" \
   --image_dirname "$IMAGE_DIR/anime" \
   --model_names "${MODEL_NAMES[@]}" \
-  --image_grid "${IMAGE_GRID[@]}" \
+  --image_grid "${IMAGE_GRIDS[@]}" \
 
 # Reasoning Score
 
@@ -73,7 +73,7 @@ python -m scripts.reasoning.reasoning_score \
   --mode "$MODE" \
   --image_dirname "${IMAGE_DIR}/reasoning" \
   --model_names "${MODEL_NAMES[@]}" \
-  --image_grid "${IMAGE_GRID[@]}" \
+  --image_grid "${IMAGE_GRIDS[@]}" \
 
 
 rm -rf tmp_*

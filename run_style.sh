@@ -10,14 +10,14 @@ MODE=EN
 IMAGE_DIR=""
 
 # model list
-MODEL_NAMES=("doubao")
-# model_names=("gpt-4o" "imagen4")
+MODEL_NAMES=("Qwen-Image")
+# MODEL_NAMES=("gpt-4o" "imagen4")
 
 # image grid
 IMAGE_GRIDS=("2,2")
 # IMAGE_GRIDS=("2,2" "1,4")
 
-pip install transformers==4.50.0
+pip install transformers==4.57.0
 
 # Style Score
 
@@ -27,7 +27,7 @@ python -m scripts.style.style_score \
   --mode "$MODE" \
   --image_dirname "$IMAGE_DIR/anime" \
   --model_names "${MODEL_NAMES[@]}" \
-  --image_grid "${IMAGE_GRID[@]}" \
+  --image_grid "${IMAGE_GRIDS[@]}" \
 
 rm -rf tmp_*
 # end_time
